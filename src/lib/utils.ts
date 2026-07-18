@@ -9,7 +9,7 @@ export const WA_NUMBER = (import.meta.env.VITE_WA_NUMBER || "919961980960").repl
 	/[^0-9]/g,
 	"",
 )
-export const SUPPORT_EMAIL = "info@growxi.com"
+export const SUPPORT_EMAIL = "growxicv@gmail.com"
 export const WA_DISPLAY = "+91 99619 80960"
 
 /** WhatsApp deep-link builder. */

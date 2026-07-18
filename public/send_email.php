@@ -56,16 +56,16 @@ $message_customer = "Dear $customer_name,\n\n"
                   . "Thank you for choosing GrowXi!\n\n"
                   . "Best regards,\n"
                   . "GrowXi Team\n"
-                  . "info@growxi.com";
+                  . "growxicv@gmail.com";
 
 $headers_customer = "From: GrowXi <info@growxi.com>\r\n"
-                  . "Reply-To: info@growxi.com\r\n"
+                  . "Reply-To: growxicv@gmail.com\r\n"
                   . "X-Mailer: PHP/" . phpversion();
 
 $mail_customer_ok = mail($to_customer, $subject_customer, $message_customer, $headers_customer);
 
 // 2. Send Email to Admin/Owner
-$to_admin = "info@growxi.com";
+$to_admin = "growxicv@gmail.com";
 $subject_admin = "🚨 New Order Received - Receipt #$receipt_no";
 $message_admin = "Hi Team,\n\n"
                 . "A new order has been successfully placed on GrowXi.\n\n"

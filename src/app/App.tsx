@@ -23,7 +23,7 @@ const STRUCTURED_DATA = {
 	name: "GrowXi",
 	description: "Expert resume building and ATS optimization service",
 	telephone: "+919961980960",
-	email: "info@growxi.com",
+	email: "growxicv@gmail.com",
 	areaServed: ["IN", "AE", "SA", "QA", "KW"],
 	priceRange: "\u20B9999\u2013\u20B92499",
 }

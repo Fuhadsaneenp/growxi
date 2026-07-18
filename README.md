@@ -105,7 +105,7 @@ wrangler pages deploy dist
 ## 📞 Contact
 
 - WhatsApp: **+91 99619 80960**
-- Email: **info@growxi.com**
+- Email: **growxicv@gmail.com**
 
 ---
 
