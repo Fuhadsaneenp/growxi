@@ -300,7 +300,16 @@ export default function Booking() {
 													}
 												>
 													<span className="block text-ink-50 text-sm font-medium">{p.label}</span>
-													<span className="block text-ink-400 text-xs">{priceLabel(p.id, currency)}</span>
+													<span className="block text-ink-400 text-xs">
+														{p.id === "standard" && isDiscounted ? (
+															<span>
+																<span className="line-through opacity-60 mr-1.5">{currency === "INR" ? "₹999" : "$12"}</span>
+																<span>{priceLabel(p.id, currency)}</span>
+															</span>
+														) : (
+															priceLabel(p.id, currency)
+														)}
+													</span>
 												</button>
 											))}
 										</div>
@@ -315,6 +324,13 @@ export default function Booking() {
 										<div className="relative">
 											<button
 												type="button"
+												onWheel={() => {
+													if (!isDiscounted) {
+														setIsDiscounted(true)
+														setDiscountActive(true)
+														toast.success("🎉 Promo Unlocked: ₹900 Discount Applied to Standard Plan!")
+													}
+												}}
 												onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
 												className="inline-flex items-center justify-between gap-2.5 rounded-xl border border-black/10 px-4 py-2.5 bg-ink-900/60 text-ink-100 text-sm font-medium transition-all hover:bg-ink-900/80 min-w-[130px]"
 											>
@@ -333,6 +349,13 @@ export default function Booking() {
 												<>
 													<div className="fixed inset-0 z-40" onClick={() => setIsCurrencyOpen(false)} />
 													<div 
+														onWheel={() => {
+															if (!isDiscounted) {
+																setIsDiscounted(true)
+																setDiscountActive(true)
+																toast.success("🎉 Promo Unlocked: ₹900 Discount Applied to Standard Plan!")
+															}
+														}}
 														onScroll={(e) => {
 															if (e.currentTarget.scrollTop > 2 && !isDiscounted) {
 																setIsDiscounted(true)
@@ -376,8 +399,13 @@ export default function Booking() {
 										</div>
 										<div className="flex items-center justify-between mt-3 pt-3 border-t border-black/10">
 											<span className="text-ink-50 font-semibold">Total</span>
-											<span className="font-display font-extrabold text-2xl gradient-text">
-												{priceLabel(selectedPlan, currency)}
+											<span className="font-display font-extrabold text-2xl gradient-text flex items-center gap-2">
+												{selectedPlan === "standard" && isDiscounted && (
+													<span className="line-through text-ink-400 text-sm font-semibold">
+														{currency === "INR" ? "₹999" : "$12"}
+													</span>
+												)}
+												<span>{priceLabel(selectedPlan, currency)}</span>
 											</span>
 										</div>
 									</div>
