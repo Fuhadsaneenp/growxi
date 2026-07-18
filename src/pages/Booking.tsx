@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import html2canvas from "html2canvas"
 import { z } from "zod"
 import { motion, AnimatePresence } from "framer-motion"
 import Confetti from "react-confetti"
@@ -98,6 +99,7 @@ export default function Booking() {
 	const [countdown, setCountdown] = useState(10)
 	const [receiptNo] = useState(() => "GRX-" + Math.floor(100000 + Math.random() * 900000))
 	const [receiptDate] = useState(() => new Date().toLocaleDateString(undefined, { dateStyle: "long" }))
+	const receiptRef = useRef<HTMLDivElement>(null)
 	const { width, height } = useWindowSize()
 
 	const {
@@ -132,16 +134,83 @@ export default function Booking() {
 		toast.success("Payment successful! Receipt generated.")
 	}
 
+	const handleAutoRedirect = async () => {
+		let imageUrl: string | null = null
+		if (receiptRef.current) {
+			try {
+				toast.loading("Generating receipt image...", { id: "uploading" })
+				const canvas = await html2canvas(receiptRef.current, {
+					backgroundColor: "#0d0614",
+					scale: 2,
+					useCORS: true,
+				})
+				
+				const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.7))
+				if (blob) {
+					// 1. Download receipt image immediately
+					const url = URL.createObjectURL(blob)
+					const a = document.createElement("a")
+					a.href = url
+					a.download = `receipt-${receiptNo}.jpg`
+					a.click()
+					URL.revokeObjectURL(url)
+
+					// 2. Try copying to clipboard
+					try {
+						await navigator.clipboard.write([
+							new ClipboardItem({ "image/jpeg": blob })
+						])
+					} catch (clipErr) {
+						console.log("Clipboard auto-copy failed", clipErr)
+					}
+
+					// 3. Upload to free host (uguu.se) with 1.8s timeout
+					const controller = new AbortController()
+					const timeoutId = setTimeout(() => controller.abort(), 1800)
+
+					const formData = new FormData()
+					formData.append("files[]", blob, `receipt-${receiptNo}.jpg`)
+					
+					try {
+						const res = await fetch("https://uguu.se/upload", {
+							method: "POST",
+							body: formData,
+							signal: controller.signal
+						})
+						clearTimeout(timeoutId)
+						if (res.ok) {
+							const data = await res.json()
+							if (data?.success && data.files?.[0]?.url) {
+								imageUrl = data.files[0].url
+							}
+						}
+					} catch (e) {
+						console.log("Uguu.se upload failed or timed out", e)
+					}
+				}
+				toast.dismiss("uploading")
+			} catch (err) {
+				console.error("Auto html2canvas failed", err)
+				toast.dismiss("uploading")
+			}
+		}
+
+		// Direct WhatsApp redirect
+		const v = watch()
+		const messageText = imageUrl 
+			? `Hi GrowXi! I have successfully ordered. Here is my payment receipt: ${imageUrl}`
+			: `Hi GrowXi! I have successfully ordered. Here is my payment receipt:\n\n*GrowXi Order Receipt*\n---------------------------\n*Status*: Successful ✅\n*Receipt No*: ${receiptNo}\n*Date*: ${receiptDate}\n*Name*: ${v.name}\n*Email*: ${v.email}\n*Phone*: ${v.phone}\n*Plan*: ${planLabel} Resume Package\n*Format*: ${formatLabel}\n*Amount Paid*: ${priceLabel(v.plan, currency)}\n\nThank you for choosing GrowXi!`
+		
+		window.location.href = whatsappLink(messageText)
+	}
+
 	useEffect(() => {
 		if (!done) return
 		const timer = setInterval(() => {
 			setCountdown((c) => {
 				if (c <= 1) {
 					clearInterval(timer)
-					const v = watch()
-					const formattedPrice = priceLabel(v.plan, currency)
-					const message = `Hi GrowXi! I have successfully ordered. Here is my payment receipt:\n\n*GrowXi Order Receipt*\n---------------------------\n*Status*: Successful ✅\n*Receipt No*: ${receiptNo}\n*Date*: ${receiptDate}\n*Name*: ${v.name}\n*Email*: ${v.email}\n*Phone*: ${v.phone}\n*Plan*: ${planLabel} Resume Package\n*Format*: ${formatLabel}\n*Amount Paid*: ${formattedPrice}\n\nThank you for choosing GrowXi!`
-					window.location.href = whatsappLink(message)
+					handleAutoRedirect()
 					return 0
 				}
 				return c - 1
@@ -153,7 +222,6 @@ export default function Booking() {
 	if (done) {
 		const v = watch()
 		const formattedPrice = priceLabel(v.plan, currency)
-		const message = `Hi GrowXi! I have successfully ordered. Here is my payment receipt:\n\n*GrowXi Order Receipt*\n---------------------------\n*Status*: Successful ✅\n*Receipt No*: ${receiptNo}\n*Date*: ${receiptDate}\n*Name*: ${v.name}\n*Email*: ${v.email}\n*Phone*: ${v.phone}\n*Plan*: ${planLabel} Resume Package\n*Format*: ${formatLabel}\n*Amount Paid*: ${formattedPrice}\n\nThank you for choosing GrowXi!`
 
 		return (
 			<main className="min-h-[100svh] flex items-center justify-center px-6 pt-24 pb-12">
@@ -174,7 +242,7 @@ export default function Booking() {
 					</p>
 
 					{/* Receipt Card */}
-					<div className="bg-ink-950/80 border border-black/20 rounded-2xl p-5 mb-6 text-left font-mono text-xs text-ink-200 relative overflow-hidden shadow-2xl">
+					<div ref={receiptRef} className="bg-ink-950/80 border border-black/20 rounded-2xl p-5 mb-6 text-left font-mono text-xs text-ink-200 relative overflow-hidden shadow-2xl">
 						{/* Top receipt decoration */}
 						<div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-brand-500 to-accent-500" />
 						
@@ -233,15 +301,16 @@ export default function Booking() {
 
 					<p className="text-ink-300 text-sm mb-6 flex items-center justify-center gap-2">
 						<span className="w-2 h-2 rounded-full bg-brand-500 animate-ping" />
-						Sharing receipt on WhatsApp automatically in <span className="font-bold text-ink-100">{countdown}s</span>...
+						Sharing receipt automatically in <span className="font-bold text-ink-100">{countdown}s</span>...
 					</p>
 
-					<a
-						href={whatsappLink(message)}
+					<button
+						type="button"
+						onClick={handleAutoRedirect}
 						className="btn-primary w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-white font-semibold shadow-brand-md"
 					>
-						<MessageCircle size={18} /> Open WhatsApp Now
-					</a>
+						<MessageCircle size={18} /> Share Receipt Image
+					</button>
 				</motion.div>
 			</main>
 		)
