@@ -110,21 +110,15 @@ export function PaymentMethods({ plan, currency, payer, onPaid }: PaymentMethods
 
 			{hasPaypal && <div ref={paypalRef} className="min-h-[48px]" />}
 
-			{anyConfigured && (
-				<div className="flex items-center gap-3 py-1">
-					<span className="h-px flex-1 bg-black/10" />
-					<span className="text-ink-400 text-xs">or</span>
-					<span className="h-px flex-1 bg-black/10" />
-				</div>
+			{!anyConfigured && (
+				<button
+					type="button"
+					onClick={onPaid}
+					className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl border border-[#25D366]/50 text-[#1c8c4b] font-medium text-base min-h-[52px] hover:bg-[#25D366]/10 transition-colors"
+				>
+					<MessageCircle size={18} /> Order on WhatsApp
+				</button>
 			)}
-
-			<button
-				type="button"
-				onClick={onPaid}
-				className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl border border-[#25D366]/50 text-[#1c8c4b] font-medium text-base min-h-[52px] hover:bg-[#25D366]/10 transition-colors"
-			>
-				<MessageCircle size={18} /> Order on WhatsApp
-			</button>
 
 			{!anyConfigured && (
 				<p className="text-ink-400 text-xs text-center">

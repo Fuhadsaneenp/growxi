@@ -96,6 +96,9 @@ export default function Booking() {
 	const [currency, setCurrency] = useState<Currency>(PAYMENT_CONFIG.defaultCurrency)
 	const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
 	const [isDiscounted, setIsDiscounted] = useState(false)
+	const [countdown, setCountdown] = useState(10)
+	const [receiptNo] = useState(() => "GRX-" + Math.floor(100000 + Math.random() * 900000))
+	const [receiptDate] = useState(() => new Date().toLocaleDateString(undefined, { dateStyle: "long" }))
 	const { width, height } = useWindowSize()
 
 	const {
@@ -122,55 +125,123 @@ export default function Booking() {
 	}
 	const back = () => setStep((s) => Math.max(s - 1, 0))
 
-	const handlePaid = () => {
-		const v = watch()
-		setDone(true)
-		toast.success("Order received! Redirecting to WhatsApp\u2026")
-		const message =
-			"Hi GrowXi! I just ordered the " +
-			v.plan +
-			" resume package (" +
-			v.format.toUpperCase() +
-			" format, " +
-			priceLabel(v.plan, currency) +
-			"). Name: " +
-			v.name +
-			", target role: " +
-			v.targetRole +
-			"."
-		setTimeout(() => {
-			window.open(whatsappLink(message), "_blank")
-		}, 1400)
-	}
-
 	const planLabel = PLANS.find((p) => p.id === selectedPlan)?.label ?? "Standard"
 	const formatLabel = FORMATS.find((f) => f.id === selectedFormat)?.label ?? "GCC / Gulf"
 
+	const handlePaid = () => {
+		setDone(true)
+		toast.success("Payment successful! Receipt generated.")
+	}
+
+	useEffect(() => {
+		if (!done) return
+		const timer = setInterval(() => {
+			setCountdown((c) => {
+				if (c <= 1) {
+					clearInterval(timer)
+					const v = watch()
+					const formattedPrice = priceLabel(v.plan, currency)
+					const message = `Hi GrowXi! I have successfully ordered. Here is my payment receipt:\n\n*GrowXi Order Receipt*\n---------------------------\n*Status*: Successful ✅\n*Receipt No*: ${receiptNo}\n*Date*: ${receiptDate}\n*Name*: ${v.name}\n*Email*: ${v.email}\n*Phone*: ${v.phone}\n*Plan*: ${planLabel} Resume Package\n*Format*: ${formatLabel}\n*Amount Paid*: ${formattedPrice}\n\nThank you for choosing GrowXi!`
+					window.location.href = whatsappLink(message)
+					return 0
+				}
+				return c - 1
+			})
+		}, 1000)
+		return () => clearInterval(timer)
+	}, [done, receiptNo, receiptDate, planLabel, formatLabel, currency])
+
 	if (done) {
+		const v = watch()
+		const formattedPrice = priceLabel(v.plan, currency)
+		const message = `Hi GrowXi! I have successfully ordered. Here is my payment receipt:\n\n*GrowXi Order Receipt*\n---------------------------\n*Status*: Successful ✅\n*Receipt No*: ${receiptNo}\n*Date*: ${receiptDate}\n*Name*: ${v.name}\n*Email*: ${v.email}\n*Phone*: ${v.phone}\n*Plan*: ${planLabel} Resume Package\n*Format*: ${formatLabel}\n*Amount Paid*: ${formattedPrice}\n\nThank you for choosing GrowXi!`
+
 		return (
-			<main className="min-h-[100svh] flex items-center justify-center px-6 pt-24">
+			<main className="min-h-[100svh] flex items-center justify-center px-6 pt-24 pb-12">
 				<Confetti width={width} height={height} recycle={false} numberOfPieces={400} />
 				<motion.div
 					initial={ { opacity: 0, scale: 0.9 } }
 					animate={ { opacity: 1, scale: 1 } }
-					className="glass-card glow-border p-10 md:p-14 text-center max-w-lg"
+					className="glass-card glow-border p-8 md:p-10 text-center max-w-md w-full relative"
 				>
-					<div className="w-16 h-16 rounded-full bg-accent-500/15 border border-accent-500/40 flex items-center justify-center mx-auto mb-6">
+					<div className="w-16 h-16 rounded-full bg-accent-500/15 border border-accent-500/40 flex items-center justify-center mx-auto mb-5">
 						<CheckCircle2 size={32} className="text-accent-400" />
 					</div>
-					<h1 className="font-display font-extrabold text-display-sm text-ink-50 mb-3">
-						Your resume is in motion! 🎉
+					<h1 className="font-display font-extrabold text-display-xs text-ink-50 mb-1">
+						Payment Successful! 🎉
 					</h1>
-					<p className="text-ink-300 mb-8">
-						We&rsquo;ve received your order. Our experts will confirm the details on WhatsApp within minutes and get started right away.
+					<p className="text-ink-300 text-sm mb-6">
+						Your payment receipt has been generated.
 					</p>
+
+					{/* Receipt Card */}
+					<div className="bg-ink-950/80 border border-black/20 rounded-2xl p-5 mb-6 text-left font-mono text-xs text-ink-200 relative overflow-hidden shadow-2xl">
+						{/* Top receipt decoration */}
+						<div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-brand-500 to-accent-500" />
+						
+						<div className="flex justify-between items-center mb-4">
+							<span className="text-ink-50 font-bold tracking-wider">GROWXI RECEIPT</span>
+							<span className="bg-accent-500/20 text-accent-300 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-widest">
+								PAID
+							</span>
+						</div>
+
+						<div className="border-b border-dashed border-white/10 pb-3 mb-3 space-y-1.5">
+							<div className="flex justify-between">
+								<span className="text-ink-400">Receipt No:</span>
+								<span className="text-ink-100 font-medium">{receiptNo}</span>
+							</div>
+							<div className="flex justify-between">
+								<span className="text-ink-400">Date:</span>
+								<span className="text-ink-100 font-medium">{receiptDate}</span>
+							</div>
+							<div className="flex justify-between">
+								<span className="text-ink-400">Status:</span>
+								<span className="text-emerald-400 font-bold">Successful</span>
+							</div>
+						</div>
+
+						<div className="border-b border-dashed border-white/10 pb-3 mb-3 space-y-1.5">
+							<div className="flex justify-between">
+								<span className="text-ink-400">Customer:</span>
+								<span className="text-ink-100 font-medium truncate max-w-[180px]">{v.name}</span>
+							</div>
+							<div className="flex justify-between">
+								<span className="text-ink-400">Email:</span>
+								<span className="text-ink-100 font-medium truncate max-w-[180px]">{v.email}</span>
+							</div>
+							<div className="flex justify-between">
+								<span className="text-ink-400">Phone:</span>
+								<span className="text-ink-100 font-medium">{v.phone}</span>
+							</div>
+						</div>
+
+						<div className="space-y-1.5">
+							<div className="flex justify-between">
+								<span className="text-ink-400">Plan:</span>
+								<span className="text-ink-100 font-medium">{planLabel}</span>
+							</div>
+							<div className="flex justify-between">
+								<span className="text-ink-400">Format:</span>
+								<span className="text-ink-100 font-medium">{formatLabel}</span>
+							</div>
+							<div className="flex justify-between pt-2 border-t border-white/5 mt-2 text-sm">
+								<span className="text-ink-100 font-bold">Amount Paid:</span>
+								<span className="text-brand-300 font-extrabold">{formattedPrice}</span>
+							</div>
+						</div>
+					</div>
+
+					<p className="text-ink-300 text-sm mb-6 flex items-center justify-center gap-2">
+						<span className="w-2 h-2 rounded-full bg-brand-500 animate-ping" />
+						Sharing receipt on WhatsApp automatically in <span className="font-bold text-ink-100">{countdown}s</span>...
+					</p>
+
 					<a
-						href={whatsappLink("Hi GrowXi! I just placed an order for my resume.")}
-						target="_blank"
-						rel="noopener noreferrer"
-						className="btn-primary inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-white font-semibold"
+						href={whatsappLink(message)}
+						className="btn-primary w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-white font-semibold shadow-brand-md"
 					>
-						<MessageCircle size={18} /> Open WhatsApp
+						<MessageCircle size={18} /> Open WhatsApp Now
 					</a>
 				</motion.div>
 			</main>
