@@ -22,7 +22,7 @@ import {
 import { useBookingStore } from "@/app/store"
 import { whatsappLink } from "@/lib/utils"
 import { PaymentMethods } from "@/components/ui/PaymentMethods"
-import { PAYMENT_CONFIG, priceLabel, setDiscountActive } from "@/lib/payments"
+import { PAYMENT_CONFIG, priceLabel } from "@/lib/payments"
 import type { Currency } from "@/lib/payments"
 
 const schema = z.object({
@@ -95,7 +95,6 @@ export default function Booking() {
 	const [done, setDone] = useState(false)
 	const [currency, setCurrency] = useState<Currency>(PAYMENT_CONFIG.defaultCurrency)
 	const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
-	const [isDiscounted, setIsDiscounted] = useState(false)
 	const [countdown, setCountdown] = useState(10)
 	const [receiptNo] = useState(() => "GRX-" + Math.floor(100000 + Math.random() * 900000))
 	const [receiptDate] = useState(() => new Date().toLocaleDateString(undefined, { dateStyle: "long" }))
@@ -403,16 +402,7 @@ export default function Booking() {
 											{isCurrencyOpen && (
 												<>
 													<div className="fixed inset-0 z-40" onClick={() => setIsCurrencyOpen(false)} />
-													<div 
-														onScroll={(e) => {
-															if (e.currentTarget.scrollTop > 2 && !isDiscounted) {
-																setIsDiscounted(true)
-																setDiscountActive(true)
-																toast.success("🎉 Promo Unlocked: ₹900 Discount Applied to Standard Plan!")
-															}
-														}}
-														className="absolute right-0 mt-1.5 w-60 rounded-xl border border-black/10 bg-ink-950/95 backdrop-blur-md p-1 shadow-2xl z-50 max-h-60 overflow-y-auto"
-													>
+													<div className="absolute right-0 mt-1.5 w-60 rounded-xl border border-black/10 bg-ink-950/95 backdrop-blur-md p-1 shadow-2xl z-50 max-h-60 overflow-y-auto">
 														{CURRENCIES.map((c) => (
 															<button
 																type="button"

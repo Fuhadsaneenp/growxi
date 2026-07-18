@@ -135,36 +135,11 @@ export const PAYMENT_CONFIG = {
 	defaultCurrency: ((env.VITE_DEFAULT_CURRENCY as string) || "INR") as Currency,
 }
 
-let isDiscountActive = false
-
-export function setDiscountActive(active: boolean) {
-	isDiscountActive = active
-}
-
-export function getDiscountActive() {
-	return isDiscountActive
-}
-
 export function amountFor(plan: PlanId, currency: Currency): number {
-	const baseAmount = PLAN_PRICING[plan].prices[currency] || PLAN_PRICING[plan].prices.INR
-	if (plan === "standard" && isDiscountActive) {
-		if (currency === "INR") return baseAmount - 900 // 99
-		// Apply ~90% discount (divide by 10) and round to reasonable decimals
-		const rounded = Math.round((baseAmount / 10) * 10) / 10
-		return rounded > 0 ? rounded : 1
-	}
-	return baseAmount
+	return PLAN_PRICING[plan].prices[currency] || PLAN_PRICING[plan].prices.INR
 }
 
 export function priceLabel(plan: PlanId, currency: Currency): string {
-	if (plan === "standard" && isDiscountActive) {
-		const discountedAmount = amountFor(plan, currency)
-		if (currency === "INR") return "₹" + discountedAmount
-		if (currency === "USD") return "$" + discountedAmount
-		if (currency === "EUR") return "€" + discountedAmount
-		if (currency === "GBP") return "£" + discountedAmount
-		return discountedAmount + " " + currency
-	}
 	return PLAN_PRICING[plan].labels[currency] || PLAN_PRICING[plan].labels.INR
 }
 
