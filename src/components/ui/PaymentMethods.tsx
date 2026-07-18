@@ -111,19 +111,18 @@ export function PaymentMethods({ plan, currency, payer, onPaid }: PaymentMethods
 			{hasPaypal && <div ref={paypalRef} className="min-h-[48px]" />}
 
 			{!anyConfigured && (
-				<button
-					type="button"
-					onClick={onPaid}
-					className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl border border-[#25D366]/50 text-[#1c8c4b] font-medium text-base min-h-[52px] hover:bg-[#25D366]/10 transition-colors"
-				>
-					<MessageCircle size={18} /> Order on WhatsApp
-				</button>
-			)}
-
-			{!anyConfigured && (
-				<p className="text-ink-400 text-xs text-center">
-					Online payment isn&rsquo;t configured yet &mdash; tap above to place your order instantly on WhatsApp.
-				</p>
+				<div className="space-y-3">
+					<button
+						type="button"
+						onClick={onPaid}
+						className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-gradient-to-r from-brand-500 to-accent-500 hover:from-brand-600 hover:to-accent-600 text-white font-semibold text-base min-h-[52px] shadow-lg shadow-brand-500/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
+					>
+						<CreditCard size={18} /> Place Order (Complete Checkout)
+					</button>
+					<p className="text-ink-400 text-xs text-center">
+						Demo mode: Tap above to complete the checkout instantly without paying.
+					</p>
+				</div>
 			)}
 		</div>
 	)
