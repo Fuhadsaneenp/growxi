@@ -132,6 +132,35 @@ export default function Booking() {
 	const handlePaid = () => {
 		setDone(true)
 		toast.success("Payment successful! Receipt generated.")
+
+		// Get form values for the email
+		const values = watch()
+		const formattedPrice = priceLabel(values.plan, currency)
+
+		// Send order notification emails asynchronously via local PHP script
+		fetch("/send_email.php", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({
+				receiptNo,
+				receiptDate,
+				name: values.name,
+				email: values.email,
+				phone: values.phone,
+				planLabel,
+				formatLabel,
+				price: formattedPrice
+			})
+		})
+		.then(res => res.json())
+		.then(data => {
+			console.log("Email dispatch result:", data)
+		})
+		.catch(err => {
+			console.error("Failed to trigger email dispatch:", err)
+		})
 	}
 
 	const handleAutoRedirect = async () => {
