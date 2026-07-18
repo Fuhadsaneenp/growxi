@@ -131,7 +131,7 @@ export const PAYMENT_CONFIG = {
 		executive: env.VITE_STRIPE_LINK_EXECUTIVE || "",
 	} as Record<PlanId, string>,
 	paypalClientId: (env.VITE_PAYPAL_CLIENT_ID as string) || "",
-	razorpayKeyId: (env.VITE_RAZORPAY_KEY_ID as string) || "rzp_live_TF01YPXMyo6FDR",
+	razorpayKeyId: "", // (env.VITE_RAZORPAY_KEY_ID as string) || "rzp_live_TF01YPXMyo6FDR",
 	defaultCurrency: ((env.VITE_DEFAULT_CURRENCY as string) || "INR") as Currency,
 }
 
