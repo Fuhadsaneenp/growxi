@@ -74,12 +74,27 @@ function useWindowSize() {
 const inputClass =
 	"w-full px-4 py-3 rounded-xl bg-ink-900/60 border border-black/10 text-ink-100 text-sm focus:outline-none focus:border-brand-500/60 transition-colors"
 
+const CURRENCIES = [
+	{ code: "INR", label: "INR (₹)", name: "Indian Rupee" },
+	{ code: "USD", label: "USD ($)", name: "US Dollar" },
+	{ code: "AED", label: "AED (AED)", name: "UAE Dirham" },
+	{ code: "EUR", label: "EUR (€)", name: "Euro" },
+	{ code: "SAR", label: "SAR (SAR)", name: "Saudi Riyal" },
+	{ code: "KWD", label: "KWD (KWD)", name: "Kuwaiti Dinar" },
+	{ code: "EGP", label: "EGP (EGP)", name: "Egyptian Pound" },
+	{ code: "GBP", label: "GBP (£)", name: "British Pound" },
+	{ code: "QAR", label: "QAR (QAR)", name: "Qatari Riyal" },
+	{ code: "OMR", label: "OMR (OMR)", name: "Omani Rial" },
+	{ code: "BHD", label: "BHD (BHD)", name: "Bahraini Dinar" },
+] as const
+
 export default function Booking() {
 	const storePlan = useBookingStore((s) => s.selectedPlan)
 	const storeFormat = useBookingStore((s) => s.selectedFormat)
 	const [step, setStep] = useState(0)
 	const [done, setDone] = useState(false)
 	const [currency, setCurrency] = useState<Currency>(PAYMENT_CONFIG.defaultCurrency)
+	const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
 	const { width, height } = useWindowSize()
 
 	const {
@@ -294,25 +309,54 @@ export default function Booking() {
 
 							{step === 3 && (
 								<div className="space-y-5">
-									<div className="flex items-center justify-between">
+									<div className="flex items-center justify-between relative">
 										<label className="text-sm text-ink-300">Currency</label>
-										<select
-											value={currency}
-											onChange={(e) => setCurrency(e.target.value as Currency)}
-											className="rounded-xl border border-black/10 px-3 py-2 bg-ink-900/60 text-ink-100 text-sm font-medium outline-none cursor-pointer focus:ring-1 focus:ring-brand-500/50"
-										>
-											<option value="INR" className="bg-ink-950 text-ink-100">INR (₹)</option>
-											<option value="USD" className="bg-ink-950 text-ink-100">USD ($)</option>
-											<option value="AED" className="bg-ink-950 text-ink-100">AED (UAE Dirham)</option>
-											<option value="EUR" className="bg-ink-950 text-ink-100">EUR (€)</option>
-											<option value="SAR" className="bg-ink-950 text-ink-100">SAR (Saudi Riyal)</option>
-											<option value="KWD" className="bg-ink-950 text-ink-100">KWD (Kuwaiti Dinar)</option>
-											<option value="EGP" className="bg-ink-950 text-ink-100">EGP (Egyptian Pound)</option>
-											<option value="GBP" className="bg-ink-950 text-ink-100">GBP (£)</option>
-											<option value="QAR" className="bg-ink-950 text-ink-100">QAR (Qatari Riyal)</option>
-											<option value="OMR" className="bg-ink-950 text-ink-100">OMR (Omani Rial)</option>
-											<option value="BHD" className="bg-ink-950 text-ink-100">BHD (Bahraini Dinar)</option>
-										</select>
+										<div className="relative">
+											<button
+												type="button"
+												onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}
+												className="inline-flex items-center justify-between gap-2.5 rounded-xl border border-black/10 px-4 py-2.5 bg-ink-900/60 text-ink-100 text-sm font-medium transition-all hover:bg-ink-900/80 min-w-[130px]"
+											>
+												<span>{currency} ({currency === "INR" ? "₹" : currency === "USD" ? "$" : currency === "EUR" ? "€" : currency === "GBP" ? "£" : currency})</span>
+												<svg
+													className={"w-4 h-4 text-ink-300 transition-transform " + (isCurrencyOpen ? "rotate-180" : "")}
+													fill="none"
+													viewBox="0 0 24 24"
+													stroke="currentColor"
+												>
+													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+												</svg>
+											</button>
+
+											{isCurrencyOpen && (
+												<>
+													<div className="fixed inset-0 z-40" onClick={() => setIsCurrencyOpen(false)} />
+													<div className="absolute right-0 mt-1.5 w-60 rounded-xl border border-black/10 bg-ink-950/95 backdrop-blur-md p-1 shadow-2xl z-50 max-h-60 overflow-y-auto">
+														{CURRENCIES.map((c) => (
+															<button
+																type="button"
+																key={c.code}
+																onClick={() => {
+																	setCurrency(c.code)
+																	setIsCurrencyOpen(false)
+																}}
+																className={
+																	"w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors flex items-center justify-between " +
+																	(currency === c.code
+																		? "bg-brand-500 text-white font-medium"
+																		: "text-ink-100 hover:bg-white/5")
+																}
+															>
+																<span className="truncate mr-2">{c.name}</span>
+																<span className={"text-xs shrink-0 " + (currency === c.code ? "text-white/80" : "text-ink-400")}>
+																	{c.label}
+																</span>
+															</button>
+														))}
+													</div>
+												</>
+											)}
+										</div>
 									</div>
 
 									<div className="rounded-2xl border border-black/10 bg-ink-900/30 p-5">
