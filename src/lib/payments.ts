@@ -6,21 +6,120 @@
 
 export type PlanId = "standard" | "premium" | "executive"
 export type Provider = "stripe" | "paypal" | "razorpay"
-export type Currency = "INR" | "USD"
+export type Currency = "INR" | "USD" | "AED" | "EUR" | "SAR" | "KWD" | "EGP" | "GBP" | "QAR" | "OMR" | "BHD"
 
 export interface PlanPricing {
 	id: PlanId
 	name: string
-	inr: number
-	usd: number
-	labelINR: string
-	labelUSD: string
+	prices: Record<Currency, number>
+	labels: Record<Currency, string>
 }
 
 export const PLAN_PRICING: Record<PlanId, PlanPricing> = {
-	standard: { id: "standard", name: "Standard", inr: 999, usd: 12, labelINR: "\u20B9999", labelUSD: "$12" },
-	premium: { id: "premium", name: "Premium", inr: 1499, usd: 18, labelINR: "\u20B91,499", labelUSD: "$18" },
-	executive: { id: "executive", name: "Executive", inr: 2499, usd: 30, labelINR: "\u20B92,499", labelUSD: "$30" },
+	standard: {
+		id: "standard",
+		name: "Standard",
+		prices: {
+			INR: 999,
+			USD: 12,
+			AED: 45,
+			EUR: 11,
+			SAR: 45,
+			KWD: 4,
+			EGP: 599,
+			GBP: 10,
+			QAR: 45,
+			OMR: 5,
+			BHD: 5,
+		},
+		labels: {
+			INR: "₹999",
+			USD: "$12",
+			AED: "45 AED",
+			EUR: "€11",
+			SAR: "45 SAR",
+			KWD: "4 KWD",
+			EGP: "599 EGP",
+			GBP: "£10",
+			QAR: "45 QAR",
+			OMR: "5 OMR",
+			BHD: "5 BHD",
+		},
+	},
+	premium: {
+		id: "premium",
+		name: "Premium",
+		prices: {
+			INR: 1499,
+			USD: 18,
+			AED: 65,
+			EUR: 17,
+			SAR: 70,
+			KWD: 6,
+			EGP: 899,
+			GBP: 15,
+			QAR: 65,
+			OMR: 7,
+			BHD: 7,
+		},
+		labels: {
+			INR: "₹1,499",
+			USD: "$18",
+			AED: "65 AED",
+			EUR: "€17",
+			SAR: "70 SAR",
+			KWD: "6 KWD",
+			EGP: "899 EGP",
+			GBP: "£15",
+			QAR: "65 QAR",
+			OMR: "7 OMR",
+			BHD: "7 BHD",
+		},
+	},
+	executive: {
+		id: "executive",
+		name: "Executive",
+		prices: {
+			INR: 2499,
+			USD: 30,
+			AED: 110,
+			EUR: 28,
+			SAR: 110,
+			KWD: 10,
+			EGP: 1499,
+			GBP: 25,
+			QAR: 110,
+			OMR: 12,
+			BHD: 12,
+		},
+		labels: {
+			INR: "₹2,499",
+			USD: "$30",
+			AED: "110 AED",
+			EUR: "€28",
+			SAR: "110 SAR",
+			KWD: "10 KWD",
+			EGP: "1,499 EGP",
+			GBP: "£25",
+			QAR: "110 QAR",
+			OMR: "12 OMR",
+			BHD: "12 BHD",
+		},
+	},
+}
+
+export const CURRENCY_DECIMALS: Record<Currency, number> = {
+	INR: 2,
+	USD: 2,
+	AED: 2,
+	EUR: 2,
+	SAR: 2,
+	KWD: 3,
+	EGP: 2,
+	GBP: 2,
+	QAR: 2,
+	OMR: 3,
+	BHD: 3,
 }
 
 const env = import.meta.env
@@ -37,13 +136,11 @@ export const PAYMENT_CONFIG = {
 }
 
 export function amountFor(plan: PlanId, currency: Currency): number {
-	const p = PLAN_PRICING[plan]
-	return currency === "INR" ? p.inr : p.usd
+	return PLAN_PRICING[plan].prices[currency] || PLAN_PRICING[plan].prices.INR
 }
 
 export function priceLabel(plan: PlanId, currency: Currency): string {
-	const p = PLAN_PRICING[plan]
-	return currency === "INR" ? p.labelINR : p.labelUSD
+	return PLAN_PRICING[plan].labels[currency] || PLAN_PRICING[plan].labels.INR
 }
 
 /** Dynamically inject a third-party script once. Resolves false on failure. */
@@ -97,7 +194,7 @@ export async function payWithRazorpay(args: {
 	if (!Razorpay) return false
 	const options = {
 		key: PAYMENT_CONFIG.razorpayKeyId,
-		amount: amountFor(plan, currency) * 100,
+		amount: amountFor(plan, currency) * Math.pow(10, CURRENCY_DECIMALS[currency] || 2),
 		currency,
 		name: "Growxi",
 		description: PLAN_PRICING[plan].name + " Resume Package",

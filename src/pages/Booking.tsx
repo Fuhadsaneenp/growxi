@@ -296,23 +296,23 @@ export default function Booking() {
 								<div className="space-y-5">
 									<div className="flex items-center justify-between">
 										<label className="text-sm text-ink-300">Currency</label>
-										<div className="inline-flex rounded-xl border border-black/10 p-1 bg-ink-900/40">
-											{(["INR", "USD"] as const).map((c) => (
-												<button
-													type="button"
-													key={c}
-													onClick={() => setCurrency(c)}
-													className={
-														"px-4 py-1.5 rounded-lg text-sm font-medium transition-all " +
-														(currency === c
-															? "bg-brand-500 text-white"
-															: "text-ink-300")
-													}
-												>
-													{c}
-												</button>
-											))}
-										</div>
+										<select
+											value={currency}
+											onChange={(e) => setCurrency(e.target.value as Currency)}
+											className="rounded-xl border border-black/10 px-3 py-2 bg-ink-900/60 text-ink-100 text-sm font-medium outline-none cursor-pointer focus:ring-1 focus:ring-brand-500/50"
+										>
+											<option value="INR" className="bg-ink-950 text-ink-100">INR (₹)</option>
+											<option value="USD" className="bg-ink-950 text-ink-100">USD ($)</option>
+											<option value="AED" className="bg-ink-950 text-ink-100">AED (UAE Dirham)</option>
+											<option value="EUR" className="bg-ink-950 text-ink-100">EUR (€)</option>
+											<option value="SAR" className="bg-ink-950 text-ink-100">SAR (Saudi Riyal)</option>
+											<option value="KWD" className="bg-ink-950 text-ink-100">KWD (Kuwaiti Dinar)</option>
+											<option value="EGP" className="bg-ink-950 text-ink-100">EGP (Egyptian Pound)</option>
+											<option value="GBP" className="bg-ink-950 text-ink-100">GBP (£)</option>
+											<option value="QAR" className="bg-ink-950 text-ink-100">QAR (Qatari Riyal)</option>
+											<option value="OMR" className="bg-ink-950 text-ink-100">OMR (Omani Rial)</option>
+											<option value="BHD" className="bg-ink-950 text-ink-100">BHD (Bahraini Dinar)</option>
+										</select>
 									</div>
 
 									<div className="rounded-2xl border border-black/10 bg-ink-900/30 p-5">
