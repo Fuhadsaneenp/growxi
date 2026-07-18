@@ -1,9 +1,11 @@
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { Link } from "react-router-dom"
 import { Check } from "lucide-react"
 import { viewportOnce } from "@/lib/animations"
 import { useBookingStore } from "@/app/store"
 import type { PlanId } from "@/app/store"
+import { getDiscountActive, setDiscountActive } from "@/lib/payments"
 
 const PLANS: Array<{
 	id: PlanId
@@ -73,6 +75,20 @@ const PLANS: Array<{
 
 export function PricingSection() {
 	const setPlan = useBookingStore((s) => s.setPlan)
+	const [active, setActive] = useState(getDiscountActive())
+
+	useEffect(() => {
+		const handleScroll = () => {
+			if (!active && window.scrollY > 20) {
+				setDiscountActive(true)
+				setActive(true)
+			}
+		}
+		window.addEventListener("scroll", handleScroll)
+		// Run initial check
+		handleScroll()
+		return () => window.removeEventListener("scroll", handleScroll)
+	}, [active])
 
 	return (
 		<section className="py-32 relative overflow-hidden">
@@ -118,8 +134,23 @@ export function PricingSection() {
 							<h3 className="font-display font-bold text-xl text-ink-50 mb-1">{plan.name}</h3>
 							<p className="text-ink-400 text-sm mb-5 min-h-[40px]">{plan.description}</p>
 							<div className="flex items-end gap-2 mb-6">
-								<span className="text-4xl font-display font-extrabold text-ink-50">{plan.price}</span>
-								<span className="text-ink-400 text-sm mb-1">{plan.priceUSD}</span>
+								{plan.id === "standard" && getDiscountActive() ? (
+									<>
+										<span className="text-4xl font-display font-extrabold text-ink-50">
+											<span className="line-through text-ink-400 text-2xl mr-2">₹999</span>
+											<span>₹99</span>
+										</span>
+										<span className="text-ink-400 text-sm mb-1">
+											<span className="line-through mr-1 opacity-60">~$12</span>
+											<span>~$1</span>
+										</span>
+									</>
+								) : (
+									<>
+										<span className="text-4xl font-display font-extrabold text-ink-50">{plan.price}</span>
+										<span className="text-ink-400 text-sm mb-1">{plan.priceUSD}</span>
+									</>
+								)}
 							</div>
 							<ul className="space-y-3 mb-8 flex-1">
 								{plan.features.map((f) => (
